@@ -11,47 +11,52 @@ var gulp = require('gulp'),
     lazypipe = require('lazypipe');
 
 var defaultOptions = {
-  watch: false,
-  src: ['./app/app.ts', './typings/main.d.ts'],
-  outputPath: 'www/build/js/',
-  outputFile: 'app.bundle.js',
-  browserifyOptions: {
-    cache: {},
-    packageCache: {},
-    debug: true
-  },
-  watchifyOptions: {},
-  tsifyOptions: {},
-  onError: function(err){ console.error(err.toString()); },
-  onLog: function(log){
-    console.log((log = log.split(' '), log[0] = pretty(log[0]), log.join(' ')));
-  }
+    watch: false,
+    src: ['./app/app.ts', './typings/main.d.ts'],
+    outputPath: 'www/build/js/',
+    outputFile: 'app.bundle.js',
+    browserifyOptions: {
+        cache: {},
+        packageCache: {},
+        debug: true
+    },
+    sourcemapOptions: {
+        includeContent: true,
+        sourceRoot: '../../../'
+    },
+    watchifyOptions: {},
+    tsifyOptions: {},
+    onError: function (err) { console.error(err.toString()); },
+    onLog: function (log) {
+        console.log((log = log.split(' '), log[0] = pretty(log[0]), log.join(' ')));
+    }
 }
 
-module.exports = function(options) {
-  var options = assign(defaultOptions, options);
-  var sourcemapPipe = lazypipe()
-    .pipe(buffer)
-    .pipe(sourcemaps.init, { loadMaps: true })
-    .pipe(sourcemaps.write, './');
+module.exports = function (options) {
+    var options = assign(defaultOptions, options);
+    var sourcemapPipe = lazypipe()
+      .pipe(buffer)
+      .pipe(sourcemaps.init, { loadMaps: true })
+      .pipe(sourcemaps.write, './', options.sourcemapOptions);
 
-  var b = browserify(options.src, options.browserifyOptions)
-    .plugin(tsify, options.tsifyOptions);
 
-  if (options.watch) {
-    b = watchify(b, options.watchifyOptions);
-    b.on('update', bundle);
-    b.on('log', options.onLog);
-  }
+    var b = browserify(options.src, options.browserifyOptions)
+      .plugin(tsify, options.tsifyOptions);
 
-  return bundle();
+    if (options.watch) {
+        b = watchify(b, options.watchifyOptions);
+        b.on('update', bundle);
+        b.on('log', options.onLog);
+    }
 
-  function bundle() {
-    return b.bundle()
-      .on('error', options.onError)
-      .pipe(source(options.outputFile))
-      .pipe(gulpif(options.browserifyOptions.debug, sourcemapPipe()))
-      .pipe(gulp.dest(options.outputPath));
-  }
+    return bundle();
+
+    function bundle() {
+        return b.bundle()
+          .on('error', options.onError)
+          .pipe(source(options.outputFile))
+          .pipe(gulpif(options.browserifyOptions.debug, sourcemapPipe()))
+          .pipe(gulp.dest(options.outputPath));
+    }
 }
 

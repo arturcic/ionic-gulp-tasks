@@ -1,0 +1,10 @@
+{
+  "name": "ionic-gulp-tasks",
+  "version": "1.0.0",
+  "description": "A curated collection of [Gulp](http://gulpjs.com/) tasks for building Ionic apps. Using these tasks allows you to stay up to date if the default Ionic 2 build changes while it is in Beta.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/arturcic/ionic-gulp-tasks.git"
+  },
+  "license": "MIT"
+}
